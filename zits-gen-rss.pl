@@ -22,9 +22,10 @@ our $VERSION = 0.01;
 # Configuration
 my $number_of_entries = 7;
 my $timeout = 3;
-my $url_template = 'http://zitscomics.com/%Y/%m/%d/?post_type=king_comic';
+my $url_template = 'http://zitscomics.com/comics/%B-%d-%Y/#comic';
 my $user_agent = 'Mozilla/5.0';
 local $ENV{TZ} = 'AST4ADT';
+local $ENV{LC_TIME} = 'en_US';
 
 # Libraries
 use Carp;
@@ -89,7 +90,8 @@ EOT
 sub output_item {
     my @ymd = @_;
     my @localtime = localtime(Date_to_Time(@ymd,@ymdhms[3..5]));
-    my $page_url = strftime($url_template,  @localtime);
+    my $page_url = lc(strftime($url_template,  @localtime));
+    $page_url =~ s/-0/-/g;
     my $pubdate  = strftime('%a, %d %b %Y', @localtime);
     my $img_url;
 
@@ -110,8 +112,8 @@ sub output_item {
     print <<"EOT";
                 <item>
                         <title>$title - $pubdate</title>
-                        <link>$page_url#comic</link>
-                        <guid>$page_url#comic</guid>
+                        <link>$page_url</link>
+                        <guid>$page_url</guid>
                         <pubDate>$pubdate 00:00:00 +00:00</pubDate>
                         <description>&lt;img src="$img_url" border="0" alt="$title" /&gt;</description>
                 </item>
