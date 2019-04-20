@@ -17,12 +17,12 @@ use strict;
 use warnings;
 use 5.010;
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 # Configuration
 my $number_of_entries = 7;
 my $timeout = 3;
-my $url_template = 'http://zitscomics.com/comics/%B-%d-%Y/#comic';
+my $url_template = 'https://comicskingdom.com/zits/%Y-%m-%d/';
 my $user_agent = 'Mozilla/5.0';
 local $ENV{TZ} = 'AST4ADT';
 local $ENV{LC_TIME} = 'en_US';
@@ -91,7 +91,6 @@ sub output_item {
     my @ymd = @_;
     my @localtime = localtime(Date_to_Time(@ymd,@ymdhms[3..5]));
     my $page_url = lc(strftime($url_template,  @localtime));
-    $page_url =~ s/-0/-/g;
     my $pubdate  = strftime('%a, %d %b %Y', @localtime);
     my $img_url;
 
@@ -100,7 +99,7 @@ sub output_item {
         my $response = $ua->get($page_url);
         if ($response->is_success) {
             my $content = $response->decoded_content;
-            if ($content =~ m{value="Zits" /><img src="(.*?)" /></form>}) {
+            if ($content =~ m{<meta property="og:image" content="(.*?)" />}) {
                 $img_url = $1;
             }
         }
@@ -114,7 +113,7 @@ sub output_item {
                         <title>$title - $pubdate</title>
                         <link>$page_url</link>
                         <guid>$page_url</guid>
-                        <pubDate>$pubdate 00:00:00 +00:00</pubDate>
+                        <pubDate>$pubdate 00:00:00 +0000</pubDate>
                         <description>&lt;img src="$img_url" border="0" alt="$title" /&gt;</description>
                 </item>
 EOT
